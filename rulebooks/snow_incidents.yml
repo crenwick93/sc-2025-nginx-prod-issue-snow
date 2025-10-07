@@ -68,14 +68,14 @@
                 Incident: {{ event.incident_number | default('unknown') }}
                 Host: {{ event.target_host | default('unknown host') }}
                 Environment: {{ event.environment | default('unknown') }}
-                Original description: {{ event.description | default('') }}
+                Diagnostics report: {{ event.diagnostics_report | default('') }}
 
                 When the change is approved, the communication relay will be reset by Event Driven Ansible.
               change_impact: high
               change_urgency: high
               change_assignment_group: "Event Driven Ansible"
-              implementation_job_template_name: "Remediate Comms - Spaceship"
-              change_justification: "Comms relay unreachable, ICMP blocked"
+              implementation_job_template_name: "Remediate Nginx Config"
+              change_justification: "{{ event.diagnostics_structured.nginx_config_error | default('') }}"
 
               # Incident fields for the playbook's pre-change incident
               success_update: |
