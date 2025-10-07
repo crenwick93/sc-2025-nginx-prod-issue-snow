@@ -1,6 +1,6 @@
 ---
 - name: Remediate invalid NGINX configuration
-  hosts: nginx-web-app
+  hosts: target_host
   become: true
   gather_facts: false
 
