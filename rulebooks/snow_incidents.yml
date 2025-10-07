@@ -52,7 +52,9 @@
 
     # 3) Handle production incidents
     - name: Handle production incident
-      condition: event.environment is defined and event.environment == "Production"
+      condition: >
+        event.environment is defined and event.environment == "Production"
+        and event.diagnostics_structured.nginx_config_error is match(".*unknown directive.*", ignorecase=true)
       action:
         run_workflow_template:
           name: Create Change and Update Incident
