@@ -62,7 +62,7 @@
           job_args:
             extra_vars:
               # Change Request fields
-              change_short_description: "Emergency change: Remediate Comms on {{ event.target_host | default('unknown host') }}"
+              change_short_description: "Emergency change: Nginx issue on {{ event.target_host | default('unknown host') }}"
               change_description: |
                 Automated emergency change created by EDA.
                 Incident: {{ event.incident_number | default('unknown') }}
