@@ -25,7 +25,7 @@
       action:
         run_job_template:
           name: Enrich incident with CMDB and diagnostics data
-          organization: SC-2025-SNOW
+          organization: SC-2025
           post_events: true
           job_args:
             extra_vars:
@@ -37,7 +37,7 @@
       action:
         run_workflow_template:
           name: non_prod_servicenow_auto_remediate_selinux_workflow
-          organization: SC-2025-SNOW
+          organization: SC-2025
           job_args:
             extra_vars:
               target_host: "{{ event.target_host }}"
@@ -56,7 +56,7 @@
       action:
         run_workflow_template:
           name: Create Change and Update Incident
-          organization: SC-2025-SNOW
+          organization: SC-2025
           job_args:
             extra_vars:
               # Change Request fields
