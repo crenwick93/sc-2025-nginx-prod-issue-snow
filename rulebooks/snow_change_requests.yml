@@ -25,7 +25,7 @@
       action:
         run_job_template:
           name: Run Implementation Plan from Change Request
-          organization: SC-2025-SNOW
+          organization: SC-2025
           job_args:
             extra_vars:
               # raw JSON; parse in the playbook using from_json
