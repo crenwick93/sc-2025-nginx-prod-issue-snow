@@ -63,14 +63,14 @@
             extra_vars:
               # Change Request fields
               change_short_description: "Emergency change: Remediate Comms on {{ event.target_host | default('unknown host') }}"
-              change_description: >
+              change_description: |
                 Automated emergency change created by EDA.
                 Incident: {{ event.incident_number | default('unknown') }}
                 Host: {{ event.target_host | default('unknown host') }}
                 Environment: {{ event.environment | default('unknown') }}
                 Diagnostics report: {{ event.diagnostics_report | default('') }}
 
-                When the change is approved, the communication relay will be reset by Event Driven Ansible.
+                When the change is approved, the nginx config will be replaced with the last working version.
               change_impact: high
               change_urgency: high
               change_assignment_group: "Event Driven Ansible"
