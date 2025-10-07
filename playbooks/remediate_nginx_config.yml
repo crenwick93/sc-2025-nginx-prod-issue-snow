@@ -1,0 +1,107 @@
+---
+- name: Remediate invalid NGINX configuration
+  hosts: nginx-web-app
+  become: true
+  gather_facts: false
+
+  vars:
+    nginx_main_conf: "/etc/nginx/nginx.conf"
+    nginx_ssl_conf: "/etc/nginx/conf.d/ssl.conf"
+    nginx_backup_dir: "/var/backups/nginx"
+    nginx_main_conf_backup: "{{ nginx_backup_dir }}/nginx.conf.bak"
+    nginx_ssl_conf_backup: "{{ nginx_backup_dir }}/ssl.conf.bak"
+
+  tasks:
+    - name: Validate current NGINX configuration
+      ansible.builtin.command: nginx -t
+      register: nginx_test
+      ignore_errors: true
+      changed_when: false
+
+    - name: Configuration is valid, nothing to remediate
+      ansible.builtin.meta: end_play
+      when: nginx_test.rc == 0
+
+    - name: Ensure backup directory exists
+      ansible.builtin.file:
+        path: "{{ nginx_backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Check for nginx main config backup
+      ansible.builtin.stat:
+        path: "{{ nginx_main_conf_backup }}"
+      register: main_backup_stat
+
+    - name: Check for nginx SSL config backup
+      ansible.builtin.stat:
+        path: "{{ nginx_ssl_conf_backup }}"
+      register: ssl_backup_stat
+
+    - name: Restore nginx main config from backup if present
+      ansible.builtin.copy:
+        src: "{{ nginx_main_conf_backup }}"
+        dest: "{{ nginx_main_conf }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      when: main_backup_stat.stat.exists
+
+    - name: Restore nginx SSL config from backup if present
+      ansible.builtin.copy:
+        src: "{{ nginx_ssl_conf_backup }}"
+        dest: "{{ nginx_ssl_conf }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      when: ssl_backup_stat.stat.exists
+
+    - name: Re-validate NGINX configuration after restore
+      ansible.builtin.command: nginx -t
+      register: nginx_retest
+      ignore_errors: true
+      changed_when: false
+
+    - name: Attempt to re-deploy nginx role as fallback
+      ansible.builtin.include_role:
+        name: nginx
+      when: nginx_retest.rc != 0
+
+    - name: Final validation of NGINX configuration
+      ansible.builtin.command: nginx -t
+      register: nginx_final_test
+      ignore_errors: true
+      changed_when: false
+
+    - name: Fail if configuration is still invalid
+      ansible.builtin.fail:
+        msg: >-
+          NGINX configuration remains invalid after attempting restore and role re-deploy.
+          Please inspect /etc/nginx/nginx.conf and files under /etc/nginx/conf.d/.
+      when: nginx_final_test.rc != 0
+
+    - name: Restart nginx to apply valid configuration
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+    - name: Backup current nginx main configuration (post-remediation)
+      ansible.builtin.copy:
+        src: "{{ nginx_main_conf }}"
+        dest: "{{ nginx_main_conf_backup }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Backup current nginx SSL configuration (post-remediation)
+      ansible.builtin.copy:
+        src: "{{ nginx_ssl_conf }}"
+        dest: "{{ nginx_ssl_conf_backup }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+
