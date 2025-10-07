@@ -16,7 +16,7 @@
   rules:
 
     # 1) Enrich incoming incidents with CMDB environment based on cmdb_ci. This is because there is no environment field in the incident table.
-    - name: Enrich incident with CMDB environment - Get Environment information to act appropriately
+    - name: Enrich incident with CMDB and diagnostics data
       condition: "event.meta is defined and event.environment is not defined"
       throttle:
         once_within: 10 minutes
@@ -24,7 +24,7 @@
           - sys_id
       action:
         run_job_template:
-          name: Gather Machine Info by CMDB CI
+          name: Enrich incident with CMDB and diagnostics data
           organization: SC-2025-SNOW
           post_events: true
           job_args:

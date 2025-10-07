@@ -138,6 +138,6 @@
          # incident_sys_id: "{{ incident_sys_id }}"
           eda_event: "{{ ansible_eda.event | default({}) }}"
           diagnostics_structured: "{{ diagnostics_structured }}"
-          target_host: "{{ target_host }}"
+          target_host: "{{ inventory_hostname }}"
           alert_fingerprint: "{{ alert_fingerprint }}"
           diagnostics_report: "{{ diagnostics_report }}"
