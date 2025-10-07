@@ -33,11 +33,22 @@
       ansible.builtin.set_fact:
         ci_target_host: "{{ ci_record.name | default(ci_record.display_name | default('')) }}"
 
+    - name: Ensure a target host was derived from CI
+      ansible.builtin.assert:
+        that:
+          - (ci_target_host | string | trim) != ''
+        fail_msg: "No target host found in CI record"
+
+    - name: Add derived host to dynamic group for next play
+      ansible.builtin.add_host:
+        name: "{{ ci_target_host }}"
+        groups: dynamic_target
+        ansible_host: "{{ ci_target_host }}"
+
     - name: Emit environment, target host, and original event back to rulebook
       ansible.builtin.set_stats:
         data:
           environment: "{{ ci_environment }}"
-          target_host: "{{ ci_target_host }}"
           sys_id: "{{ ansible_eda.event.sys_id | default('') }}"
           incident_number: "{{ ansible_eda.event.number | default('') }}"
           description: "{{ ansible_eda.event.description | default('') }}"
@@ -46,7 +57,7 @@
 
 # Diagnostics on nginx server
 - name: Run diagnostics on nginx server
-  hosts: "{{ target_host }}"
+  hosts: dynamic_target
   become: true
   gather_facts: true
 
@@ -138,6 +149,6 @@
          # incident_sys_id: "{{ incident_sys_id }}"
           eda_event: "{{ ansible_eda.event | default({}) }}"
           diagnostics_structured: "{{ diagnostics_structured }}"
-          target_host: "{{ target_host }}"
+          target_host: "{{ hostvars[inventory_hostname].ansible_host | default(inventory_hostname) }}"
           alert_fingerprint: "{{ alert_fingerprint }}"
           diagnostics_report: "{{ diagnostics_report }}"
